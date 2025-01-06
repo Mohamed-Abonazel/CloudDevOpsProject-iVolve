@@ -1,22 +1,23 @@
 @Library('Jenkins-Shared-Library')_
+
 pipeline {
     agent any
     
     environment {
-        dockerHubCredentialsID	    = 'DockerHub'  		    			// DockerHub credentials ID.
-        imageName   		    = 'ibrahimadel10/ivolve-app'     			// DockerHub repo/image name.
-	openshiftCredentialsID	    = 'OpenShift'		    			// service account token credentials ID or KubeConfig credentials ID.
-	openshiftClusterURL	    = 'https://api.ocpuat.devopsconsulting.org:6443'   	// OpenShift Cluser URL.
-        openshifProject 	    = 'ibrahim'			     			// OpenShift project name.
-	    
+        dockerHubCredentialsID  = 'docker_hub_credentials'     // DockerHub credentials ID
+        imageName               = 'mohamedabonazel/ivolve-app' // DockerHub image name
+        githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
+        kubeconfigCredentialsID = 'kubeconfig_credentials'    // Kubernetes kubeconfig credentials ID
+        kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
+        kubernetesNamespace     = 'default'                  // Kubernetes namespace for deployment
     }
     
     stages {
         
         stage('Repo Checkout') {
             steps {
-            	script {
-                	checkoutRepo
+                script {
+                    checkoutRepo()
                 }
             }
         }
@@ -24,44 +25,59 @@ pipeline {
         stage('Run Unit Test') {
             steps {
                 script {
-                	// Navigate to the directory contains the Application
-                	dir('App') {
-                		runUnitTests
-            		}
-        	}
-    	    }
-	}
-	
-        stage('Run SonarQube Analysis') {
-            steps {
-                script {
-                    	// Navigate to the directory contains the Application
-                    	dir('App') {
-                    		runSonarQubeAnalysis()
-                    	}
+                    dir('App') {
+                        runUnitTests()
+                    }
                 }
             }
         }
-       
-        stage('Build and Push Docker Image') {
+        
+        stage('Run SonarQube Analysis') {
             steps {
                 script {
-                	// Navigate to the directory contains Dockerfile
-                 	dir('App') {
-                 		buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
-                        
-                    	}
+                    dir('App') {
+                        runSonarQubeAnalysis()
+                    }
                 }
             }
         }
 
-        stage('Deploy on OpenShift Cluster') {
+        stage('Build and Push Docker Image') {
             steps {
-                script { 
-                        // Navigate to the directory contains OpenShift YAML files
-                	dir('OpenShift') {
-				deployOnOpenShift("${openshiftCredentialsID}", "${openshiftCluster}", "${openshifProject}", "${imageName}")
-                    	}
+                script {
+                    dir('App') {
+                        buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
+                    }
+                }
+            }
+        }
+
+        stage('Validate Kubernetes Cluster') {
+            steps {
+                withKubeConfig([credentialsId: "${kubeconfigCredentialsID}"]) {
+                    script {
+                        echo "Validating Kubernetes Cluster Connection..."
+                        sh '''
+                        kubectl cluster-info
+                        kubectl get nodes
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Deploy on Kubernetes') {
+            steps {
+                withKubeConfig([credentialsId: "${kubeconfigCredentialsID}"]) {
+                    script {
+                        echo "Deploying application on Kubernetes..."
+                        dir('Kubernetes') {
+                            sh '''
+                            kubectl apply -f .
+                            kubectl rollout status deployment/ivolve-app -n ${kubernetesNamespace}
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -76,3 +92,4 @@ pipeline {
         }
     }
 }
+
