@@ -5,7 +5,7 @@ pipeline {
     
     environment {
         dockerHubCredentialsID  = 'docker_hub_credentials'     // DockerHub credentials ID
-        imageName               = 'mohamedabonazel/ivolve1:latest' // DockerHub image name
+        imageName               = 'mohamedabonazel/ivolve1' // DockerHub image name
         githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
         kubeconfigCredentialsID = 'kubeconfig_credentials'    // Kubernetes kubeconfig credentials ID
         kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
