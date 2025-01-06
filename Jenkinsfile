@@ -26,6 +26,8 @@ pipeline {
             steps {
                 script {
                     dir('FinalProjectCode') {
+                    // Make gradlew executable
+                        sh 'chmod +x ./gradlew'
                         runUnitTests()
                     }
                 }
