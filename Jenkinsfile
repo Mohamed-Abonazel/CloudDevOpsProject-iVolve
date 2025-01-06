@@ -26,7 +26,6 @@ pipeline {
             steps {
                 script {
                     dir('FinalProjectCode') {
-                    // Make gradlew executable
                         sh 'chmod +x ./gradlew'
                         runUnitTests()
                     }
@@ -54,32 +53,10 @@ pipeline {
             }
         }
 
-        stage('Validate Kubernetes Cluster') {
+        stage('Deploy to Kubernetes') {
             steps {
-                withKubeConfig([credentialsId: "${kubeconfigCredentialsID}"]) {
-                    script {
-                        echo "Validating Kubernetes Cluster Connection..."
-                        sh '''
-                        kubectl cluster-info
-                        kubectl get nodes
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Deploy on Kubernetes') {
-            steps {
-                withKubeConfig([credentialsId: "${kubeconfigCredentialsID}"]) {
-                    script {
-                        echo "Deploying application on Kubernetes..."
-                        dir('Kubernetes') {
-                            sh '''
-                            kubectl apply -f .
-                            kubectl rollout status deployment/ivolve-app -n ${kubernetesNamespace}
-                            '''
-                        }
-                    }
+                script {
+                    deployStage('/home/mohamed/.kube/config', 'FinalProjectCode-main/deployment.yaml')
                 }
             }
         }
