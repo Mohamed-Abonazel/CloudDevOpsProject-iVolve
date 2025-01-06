@@ -25,7 +25,7 @@ pipeline {
         stage('Run Unit Test') {
             steps {
                 script {
-                    dir('App') {
+                    dir('FinalProjectCode') {
                         runUnitTests()
                     }
                 }
@@ -35,7 +35,7 @@ pipeline {
         stage('Run SonarQube Analysis') {
             steps {
                 script {
-                    dir('App') {
+                    dir('FinalProjectCode') {
                         runSonarQubeAnalysis()
                     }
                 }
@@ -45,7 +45,7 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    dir('App') {
+                    dir('FinalProjectCode') {
                         buildandPushDockerImage("${dockerHubCredentialsID}", "${imageName}")
                     }
                 }
