@@ -23,3 +23,9 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+sonar {
+  properties {
+    property "sonar.projectKey", "ivolve"
+  }
+}
