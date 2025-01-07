@@ -9,7 +9,7 @@ pipeline {
         githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
         kubeconfigCredentialsID = 'my-kubeconfig'    // Kubernetes kubeconfig credentials ID
         kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
-        kubernetesNamespace     = 'default'                  // Kubernetes namespace for deployment
+        
     }
     
     stages {
@@ -58,7 +58,7 @@ pipeline {
                 script {
                     echo "Deploying to Kubernetes..."
                     dir('Kubernetes') {
-                       deploy("${kubeconfigCredentialsID}", "${imageName}")
+                       deploy("${kubeconfigCredentialsID}","${kubernetesClusterURL}", "${imageName}")
               
                    }
                 }
