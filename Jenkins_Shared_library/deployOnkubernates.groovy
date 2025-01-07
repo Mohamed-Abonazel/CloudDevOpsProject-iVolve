@@ -1,21 +1,25 @@
 #!/usr/bin/env groovy
 
-// KubernetesCredentialsID can be credentials of service account token or KubeConfig file 
-def call(String KubernetesCredentialsID, String kubeConfigFile, String kubeClusterurl, String kubeNamespace, String imageName) {
+// kubeconfigCredentialsID refers to the Jenkins credential ID for the kubeconfig file.
+def call(String kubeconfigCredentialsID, String kubernetesClusterURL, String kubernetesNamespace, String imageName) {
     
-    // Update deployment.yaml with new Docker Hub image
+    // Update deployment.yaml with the new Docker image
     sh "sed -i 's|image:.*|image: ${imageName}:${BUILD_NUMBER}|g' deployment.yaml"
 
-    // login to Kubernetes Cluster via kubeconfig file
-    withCredentials([file(credentialsId: "${KubernetesCredentialsID}", variable: 'KUBECONFIG_FILE')]) {
-        sh "export KUBECONFIG=\$KUBECONFIG_FILE && kubectl config set-cluster ${kubeClusterurl}"
-        sh "export KUBECONFIG=\$KUBECONFIG_FILE && kubectl config set-context --current --namespace=${kubeNamespace}"
-        sh "export KUBECONFIG=\$KUBECONFIG_FILE && kubectl apply -f ."
-    }
+    // Use Kubeconfig credentials to authenticate with Kubernetes
+    withCredentials([file(credentialsId: "${kubeconfigCredentialsID}", variable: 'KUBECONFIG')]) {
+        sh '''
+        export KUBECONFIG=${KUBECONFIG}
+        
+        # Check connection to the Kubernetes cluster
+        kubectl cluster-info
 
-    // Optional: login to Kubernetes Cluster via service account token
-    // withCredentials([string(credentialsId: 'KubernetesServiceAccountToken', variable: 'KUBERNETES_TOKEN')]) {
-    //     sh "kubectl --token=${KUBERNETES_TOKEN} --server=${kubeClusterurl} apply -f . -n ${kubeNamespace}"
-    // }
+        # Switch to the desired namespace
+        kubectl config set-context --current --namespace=${kubernetesNamespace}
+
+        # Apply all YAML files in the current directory
+        kubectl apply -f .
+        '''
+    }
 }
 
