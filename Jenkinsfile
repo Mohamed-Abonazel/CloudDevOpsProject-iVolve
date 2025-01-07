@@ -58,7 +58,7 @@ pipeline {
                 script {
                     echo "Deploying to Kubernetes..."
                     dir('Kubernetes') {
-                       deploy("${kubeconfigCredentialsID}", "${kubernetesClusterURL}",  "${imageName}")
+                       sh 'kubectl apply -f .'
                    }
                 }
             }
