@@ -56,7 +56,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    deployStage('/home/mohamed/.kube/config', 'FinalProjectCode-main/deployment.yaml')
+                    deployStage('/home/mohamed/.kube/config', 'CloudDevOpsProject-iVolve/Kubernates/deployment.yaml')
                 }
             }
         }
