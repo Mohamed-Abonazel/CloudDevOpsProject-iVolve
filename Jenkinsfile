@@ -57,7 +57,7 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes..."
-                    dir('Kubernetes') {
+                    dir('Kubernates') {
                        sh 'kubectl apply -f Kubernates/deployment.yaml'
                    }
                 }
