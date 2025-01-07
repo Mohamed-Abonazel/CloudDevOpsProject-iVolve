@@ -57,10 +57,11 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes..."
-                    dir('Kubernetes') {
-                       deploy("${kubeconfigCredentialsID}","${kubernetesClusterURL}", "${imageName}")
+                    // Call the shared library method
+                    
+                       deployOnkubernates("${kubeconfigCredentialsID}","${kubernetesClusterURL}", "${imageName}")
               
-                   }
+                   
                 }
             }
         }
