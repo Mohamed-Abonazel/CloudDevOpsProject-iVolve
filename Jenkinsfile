@@ -7,7 +7,7 @@ pipeline {
         dockerHubCredentialsID  = 'docker_hub_credentials'     // DockerHub credentials ID
         imageName               = 'mohamedabonazel/ivolve1' // DockerHub image name
         githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
-        kubeconfigCredentialsID = 'kubeconfig_credentials'    // Kubernetes kubeconfig credentials ID
+        kubeconfigCredentialsID = 'my-kubeconfig'    // Kubernetes kubeconfig credentials ID
         kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
         kubernetesNamespace     = 'default'                  // Kubernetes namespace for deployment
     }
@@ -57,8 +57,9 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes..."
-                    kubernetesDeploy(configs: 'CloudDevOpsProject-iVolve/Kubernates/deployment.yaml', kubeConfig: [path: '/home/mohamed/.kube/config'])
-                 
+                    dir('Kubernetes') {
+                       deploy("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${kubernetesNamespace}", "${imageName}")
+                   }
                 }
             }
         }
