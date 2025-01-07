@@ -9,7 +9,7 @@ pipeline {
         githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
         kubeconfigCredentialsID = 'my-kubeconfig'    // Kubernetes kubeconfig credentials ID
         kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
-        KUBECONFIG = '/home/ubuntu/kubeconfig'
+        KUBECONFIG              = credentials('my-kubeconfig') 
     }
     
     stages {
