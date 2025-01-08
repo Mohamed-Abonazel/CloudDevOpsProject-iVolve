@@ -66,13 +66,10 @@ pipeline {
                     def clientCert = credentials("${minikubeClientCertID}")
                     def clientKey = credentials("${minikubeClientKeyID}")
 
-                    // Write the certificates to temporary files
-                    writeFile(file: '/tmp/ca.crt', text: caCert.content)
-                    writeFile(file: '/tmp/client.crt', text: clientCert.content)
-                    writeFile(file: '/tmp/client.key', text: clientKey.content)
+                  
 
                     // Call the shared library method with the certificates
-                    deployOnKubernetes("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", '/tmp/ca.crt', '/tmp/client.crt', '/tmp/client.key')
+                    deployOnKubernetes("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", caCert.content, clientCert.content, clientKey.content)
                 }
             }
         }
