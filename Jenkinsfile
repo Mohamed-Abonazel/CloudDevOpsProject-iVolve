@@ -4,12 +4,16 @@ pipeline {
     agent any
     
     environment {
-        dockerHubCredentialsID  = 'docker_hub_credentials'     // DockerHub credentials ID
-        imageName               = 'mohamedabonazel/ivolve1' // DockerHub image name
-        githubCredentialsID     = 'github_credentials'        // GitHub credentials ID
-        kubeconfigCredentialsID = 'my-kubeconfig'    // Kubernetes kubeconfig credentials ID
-        kubernetesClusterURL    = 'https://192.168.49.2:8443' // Kubernetes Cluster Control Plane URL
-        KUBECONFIG              = credentials('my-kubeconfig') 
+        dockerHubCredentialsID  = 'docker_hub_credentials'      // DockerHub credentials ID
+        imageName               = 'mohamedabonazel/ivolve1'      // DockerHub image name
+        githubCredentialsID     = 'github_credentials'           // GitHub credentials ID
+        kubeconfigCredentialsID = 'my-kubeconfig'                // Kubernetes kubeconfig credentials ID
+        kubernetesClusterURL    = 'https://192.168.49.2:8443'    // Kubernetes Cluster Control Plane URL
+        
+        // Certificates as credentials from Jenkins credentials store
+        minikubeCACertID        = 'ca-cert'             // CA certificate ID
+        minikubeClientCertID    = 'client-cert'         // Client certificate ID
+        minikubeClientKeyID     = 'client-key'          // Client key ID
     }
     
     stages {
@@ -57,11 +61,18 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes..."
-                    // Call the shared library method
-                    
-                       deployOnkubernates("${kubeconfigCredentialsID}","${kubernetesClusterURL}", "${imageName}")
-              
-                   
+                    // Fetch the certificates from Jenkins credentials store
+                    def caCert = credentials("${minikubeCACertID}")
+                    def clientCert = credentials("${minikubeClientCertID}")
+                    def clientKey = credentials("${minikubeClientKeyID}")
+
+                    // Write the certificates to temporary files
+                    writeFile(file: '/tmp/ca.crt', text: caCert.content)
+                    writeFile(file: '/tmp/client.crt', text: clientCert.content)
+                    writeFile(file: '/tmp/client.key', text: clientKey.content)
+
+                    // Call the shared library method with the certificates
+                    deployOnKubernetes("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", '/tmp/ca.crt', '/tmp/client.crt', '/tmp/client.key')
                 }
             }
         }
