@@ -10,8 +10,9 @@
     - Git
     - Jenkins
     - Docker
+    - Jenkins-Minikube
+    - Minikube-Tasks
 
-    
   tasks:
     - name: Display Jenkins IP
       debug:
