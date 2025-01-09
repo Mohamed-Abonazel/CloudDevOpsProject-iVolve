@@ -61,15 +61,15 @@ pipeline {
             steps {
                 script {
                     echo "Deploying to Kubernetes..."
+                    
                     // Fetch the certificates from Jenkins credentials store
-                    def caCert = credentials("${minikubeCACertID}")
-                    def clientCert = credentials("${minikubeClientCertID}")
-                    def clientKey = credentials("${minikubeClientKeyID}")
-
-                  
-
-                    // Call the shared library method with the certificates
-                    deployOnKubernetes("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", caCert.content, clientCert.content, clientKey.content)
+                    withCredentials([
+                        file(credentialsId: "${minikubeCACertID}", variable: 'CA_CERT_PATH'),
+                        file(credentialsId: "${minikubeClientCertID}", variable: 'CLIENT_CERT_PATH'),
+                        file(credentialsId: "${minikubeClientKeyID}", variable: 'CLIENT_KEY_PATH')
+                    ]) {
+                        deployOnkubernates("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", readFile(CA_CERT_PATH), readFile(CLIENT_CERT_PATH), readFile(CLIENT_KEY_PATH))
+                    }
                 }
             }
         }
