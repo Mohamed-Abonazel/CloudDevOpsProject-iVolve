@@ -11,8 +11,8 @@ pipeline {
         kubernetesClusterURL    = 'https://192.168.49.2:8443'    // Kubernetes Cluster Control Plane URL
         
         // Certificates as credentials from Jenkins credentials store
-        minikubeCACertID        = 'ca-cert'             // CA certificate ID
-        minikubeClientCertID    = 'client-cert'         // Client certificate ID
+        minikubeCACertID        = 'ca-crt'             // CA certificate ID
+        minikubeClientCertID    = 'client-crt'         // Client certificate ID
         minikubeClientKeyID     = 'client-key'          // Client key ID
     }
     
