@@ -4,16 +4,15 @@ pipeline {
     agent any
     
     environment {
-        dockerHubCredentialsID  = 'docker_hub_credentials'      // DockerHub credentials ID
+        dockerHubCredentialsID  = 'docker_hub_credentials'       // DockerHub credentials ID
         imageName               = 'mohamedabonazel/ivolve1'      // DockerHub image name
         githubCredentialsID     = 'github_credentials'           // GitHub credentials ID
-        kubeconfigCredentialsID = 'my-kubeconfig'                // Kubernetes kubeconfig credentials ID
-        kubernetesClusterURL    = 'https://192.168.49.2:8443'    // Kubernetes Cluster Control Plane URL
-        KUBECONFIG              = '~/.kube/config' 
-        // Certificates as credentials from Jenkins credentials store
-        minikubeCACertID        = 'ca-crt'             // CA certificate ID
-        minikubeClientCertID    = 'client-crt'         // Client certificate ID
-        minikubeClientKeyID     = 'client-key'          // Client key ID
+        CD_SERVER_URL = 'http://197.167.39.201:8080'             // Replace with the CD Jenkins server URL
+        CD_JOB_NAME = 'ivolve-cd-deploy'                        // Replace with the CD pipeline job name
+        CD_TRIGGER_TOKEN = 'TRIGGER_TOKEN'                       // Replace with the trigger token
+        CD_USER = 'Mohamed-Abonazel'                                // Replace with CD Jenkins server username
+        CD_API_TOKEN = 'API-TOKEN'                          // Replace with the API token
+        
     }
     
     stages {
@@ -57,23 +56,17 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+
+        stage('Trigger CD Pipeline') {
             steps {
-                script {
-                    echo "Deploying to Kubernetes..."
-                    
-                    // Fetch the certificates from Jenkins credentials store
-                    withCredentials([
-                        file(credentialsId: "${minikubeCACertID}", variable: 'CA_CERT_PATH'),
-                        file(credentialsId: "${minikubeClientCertID}", variable: 'CLIENT_CERT_PATH'),
-                        file(credentialsId: "${minikubeClientKeyID}", variable: 'CLIENT_KEY_PATH')
-                    ]) {
-                        deployOnkubernates("${kubeconfigCredentialsID}", "${kubernetesClusterURL}", "${imageName}", readFile(CA_CERT_PATH), readFile(CLIENT_CERT_PATH), readFile(CLIENT_KEY_PATH))
-                    }
-                }
+                echo "Triggering CD pipeline on the CD Jenkins server..."
+                sh """
+                curl -X POST -u ${CD_USER}:${CD_API_TOKEN} \
+                ${CD_SERVER_URL}/job/${CD_JOB_NAME}/buildWithParameters?token=${CD_TRIGGER_TOKEN}
+                """
             }
         }
-    }
+    
 
     post {
         success {
@@ -81,6 +74,15 @@ pipeline {
         }
         failure {
             echo "${JOB_NAME}-${BUILD_NUMBER} pipeline failed"
+        }
+    }
+
+    post {
+        success {
+            echo "CI pipeline completed successfully, and CD pipeline triggered."
+        }
+        failure {
+            echo "CI pipeline failed or CD pipeline could not be triggered."
         }
     }
 }
