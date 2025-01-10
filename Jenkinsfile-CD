@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "mohamedabonazel/ivolve1:latest"  // Replace with your Docker image
+        DEPLOY_ENV = "default"                          // Default to 'default' Kubernetes namespace
+        KUBECONFIG = "~/kube/config"              // Path to the Kubernetes config file
+        DEPLOY_DIR = "Kubernetes"                   // Directory for Kubernetes manifests
+    }
+
+    stages {
+        stage('Pull Docker Image') {
+            steps {
+                echo "Pulling Docker image ${DOCKER_IMAGE}..."
+                sh "docker pull ${DOCKER_IMAGE}"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "Deploying application to Kubernetes in the ${DEPLOY_ENV} namespace..."
+                script {
+                    sh """
+                    export KUBECONFIG=${KUBECONFIG}
+                    kubectl apply -f ${DEPLOY_DIR}   # Apply all files in the directory
+              
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment to ${DEPLOY_ENV} namespace completed successfully!"
+        }
+        failure {
+            echo "Deployment to ${DEPLOY_ENV} namespace failed. Please check the logs."
+        }
+    }
+}
+
