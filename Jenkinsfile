@@ -9,7 +9,7 @@ pipeline {
         githubCredentialsID     = 'github_credentials'           // GitHub credentials ID
         kubeconfigCredentialsID = 'my-kubeconfig'                // Kubernetes kubeconfig credentials ID
         kubernetesClusterURL    = 'https://192.168.49.2:8443'    // Kubernetes Cluster Control Plane URL
-        KUBECONFIG              = '/home/mohamed/.kube/config' 
+        KUBECONFIG              = '~/.kube/config' 
         // Certificates as credentials from Jenkins credentials store
         minikubeCACertID        = 'ca-crt'             // CA certificate ID
         minikubeClientCertID    = 'client-crt'         // Client certificate ID
